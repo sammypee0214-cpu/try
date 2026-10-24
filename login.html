@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F2F4F5;--surface:#fff;--ink:#0E1116;--muted:#5B6470;--line:rgba(14,17,22,.14);--accent:#2B3FFF;--accent-ink:#fff}
+@media (prefers-color-scheme:dark){:root{--bg:#0B0D12;--surface:#141821;--ink:#EEF0F4;--muted:#98A1AF;--line:rgba(238,240,244,.14);--accent:#7F8DFF;--accent-ink:#0B0D12}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.55 Inter,system-ui,sans-serif;min-height:100vh;display:grid;place-items:center;padding:24px}
+.box{width:min(420px,100%)}
+h1{font:800 clamp(34px,9vw,46px)/1 'Bricolage Grotesque',Inter,sans-serif;letter-spacing:-.02em;margin-bottom:10px}
+.lede{color:var(--muted);margin-bottom:26px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:26px}
+.tabs{display:flex;border:1px solid var(--line);border-radius:99px;padding:3px;margin-bottom:6px}
+.tabs button{flex:1;background:none;border:none;padding:9px;border-radius:99px;font:600 14px Inter;color:var(--muted);cursor:pointer}
+.tabs button.on{background:var(--ink);color:var(--bg)}
+label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:16px 0 6px}
+input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:var(--ink);font:inherit}
+[hidden]{display:none!important}
+.go{width:100%;margin-top:22px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:99px;padding:14px;font:600 16px Inter;cursor:pointer}
+.go:disabled{opacity:.6}
+.err{color:#D92D20;font-size:14px;min-height:22px;margin-top:12px}
+.hint{color:var(--muted);font-size:13px;margin-top:6px}
+.foot{color:var(--muted);font-size:13px;margin-top:18px;text-align:center}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<main class="box">
+  <h1>Ada Lindqvist</h1>
+  <p class="lede">Sign in to view the portfolio.</p>
+  <div class="card">
+    <div class="tabs"><button id="tabL" class="on" type="button">Sign in</button><button id="tabS" type="button">Create account</button></div>
+    <form id="form">
+      <div id="nameRow" hidden><label for="name">Your name</label><input id="name" autocomplete="name" maxlength="60"></div>
+      <label for="email">Email</label><input id="email" type="email" autocomplete="email" required maxlength="120">
+      <label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required maxlength="200">
+      <div class="hint" id="hint"></div>
+      <button class="go" id="go">Sign in</button>
+      <div class="err" id="err" role="alert"></div>
+    </form>
+  </div>
+  <p class="foot">Passwords are stored encrypted and never shown to anyone.</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);let mode="login";
+function setMode(m){mode=m;$("nameRow").hidden=m==="login";$("name").required=m==="signup";
+  $("tabL").classList.toggle("on",m==="login");$("tabS").classList.toggle("on",m==="signup");
+  $("go").textContent=m==="login"?"Sign in":"Create account";$("pw").autocomplete=m==="login"?"current-password":"new-password";
+  $("hint").textContent=m==="signup"?"Use at least 8 characters.":"";$("err").textContent=""}
+$("tabL").onclick=()=>setMode("login");$("tabS").onclick=()=>setMode("signup");
+$("form").onsubmit=async e=>{e.preventDefault();$("err").textContent="";$("go").disabled=true;
+  try{const r=await fetch("/api/"+mode,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:$("name").value,email:$("email").value,password:$("pw").value})});
+    const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||"Something went wrong");location.reload()}
+  catch(x){$("err").textContent=x.message}
+  $("go").disabled=false};
+</script>
+</body>
+</html>
